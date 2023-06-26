@@ -1,0 +1,27 @@
+#!/usr/bin/env bash
+
+# Format:
+# CLUSTERS=(
+# "$kubectl_context;$kubectl_namespace;$my_pretty_name"
+# )
+# Example: adapt to your config
+CLUSTERS=(
+"minikube;default;Local laptop deployment"
+"arn:aws:eks:us-east-1:123456:cluster/dev-cluster;dev-myteam;Dev cluster for my team"
+"arn:aws:eks:us-east-1:123456:cluster/dev-cluster;dev-otherteam;Dev cluster other team"
+"arn:aws:eks:us-east-1:678910:cluster/qa-cluster;services;QA"
+"arn:aws:eks:eu-west-2:111213:cluster/pre-cluster;services;Pre"
+)
+
+# shellcheck disable=SC2155
+function kubectl-all-clusters {
+  for line in "${CLUSTERS[@]}" ; do
+    local context=$(echo "$line" | cut -d';' -f1)
+    local namespace=$(echo "$line" | cut -d';' -f2)
+    local pretty=$(echo "$line" | cut -d';' -f3)
+    >&2 echo -e "\033[0;33m${pretty}\033[0m"
+    kubectl --context "${context}" --namespace "${namespace}" "$@"
+  done;
+}
+
+kubectl-all-clusters "$@"
